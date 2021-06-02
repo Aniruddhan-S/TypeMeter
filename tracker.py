@@ -11,9 +11,10 @@ from PyQt5.QtWidgets import *
 # trayIcon.show()
 
 keystrokes = []
-keystoke_count = 0
-
-ignored_keystrokes = [
+keystokeCount = 0
+wordCount = 1
+tempCount = 0
+ignoredKeystrokes = [
                         keyboard.Key.f12, keyboard.Key.f11, keyboard.Key.f10, keyboard.Key.f9, keyboard.Key.f8, 
                         keyboard.Key.f7, keyboard.Key.f6, keyboard.Key.f5, keyboard.Key.f4, keyboard.Key.f3, 
                         keyboard.Key.f2, keyboard.Key.f1, keyboard.Key.print_screen, keyboard.Key.media_play_pause,
@@ -26,9 +27,9 @@ ignored_keystrokes = [
                     ]
 
 def on_press(key):
-    global keystoke_count
-        
-    if key in ignored_keystrokes:
+    global keystokeCount, wordCount, tempCount
+    
+    if key in ignoredKeystrokes:
         pass
     
     elif key == keyboard.Key.backspace:
@@ -36,17 +37,31 @@ def on_press(key):
             pass
         else:
             keystrokes.pop()
-            keystoke_count -= 1
+            keystokeCount -= 1
+            tempCount -= 1
+            if tempCount == 0:
+                wordCount -= 1
+                tempCount = 4
+            # print(wordCount)
     
     else:
-        keystoke_count += 1
+        keystokeCount += 1
         keystrokes.append(key)
-
-    print(keystrokes)
-    print( keystoke_count)
+        
+        if tempCount == 4:
+            wordCount += 1
+            tempCount = 1
+        else:
+            tempCount += 1
+        # print(wordCount)
+        
+    # print(keystrokes)
+    # print(keystokeCount)
 
 def on_release(key):
     if key == keyboard.Key.insert:
+        print("Word count:      ", wordCount)
+        print("Keystroke count: ", keystokeCount)
         return False
 
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
