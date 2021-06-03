@@ -14,6 +14,8 @@ keystrokes = []
 keystokeCount = 0
 wordCount = 1
 tempCount = 0
+clearCount = 0
+
 ignoredKeystrokes = [
                         keyboard.Key.f12, keyboard.Key.f11, keyboard.Key.f10, keyboard.Key.f9, keyboard.Key.f8, 
                         keyboard.Key.f7, keyboard.Key.f6, keyboard.Key.f5, keyboard.Key.f4, keyboard.Key.f3, 
@@ -27,7 +29,7 @@ ignoredKeystrokes = [
                     ]
 
 def on_press(key):
-    global keystokeCount, wordCount, tempCount
+    global keystokeCount, wordCount, tempCount, clearCount
     
     if key in ignoredKeystrokes:
         pass
@@ -42,10 +44,10 @@ def on_press(key):
             if tempCount == 0:
                 wordCount -= 1
                 tempCount = 4
-            # print(wordCount)
     
     else:
         keystokeCount += 1
+        clearCount += 1
         keystrokes.append(key)
         
         if tempCount == 4:
@@ -53,8 +55,10 @@ def on_press(key):
             tempCount = 1
         else:
             tempCount += 1
-        # print(wordCount)
         
+    if clearCount == 100:
+        keystrokes.clear()
+        clearCount = 0
     # print(keystrokes)
     # print(keystokeCount)
 
@@ -66,6 +70,5 @@ def on_release(key):
 
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
-
 
 # sys.exit(app.exec_())
