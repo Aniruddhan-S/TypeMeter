@@ -1,4 +1,6 @@
 import sys
+import time
+import threading
 from pynput import keyboard
 from PyQt5.QtGui import * 
 from PyQt5.QtWidgets import * 
@@ -11,7 +13,7 @@ from PyQt5.QtWidgets import *
 # trayIcon.show()
 
 keystrokes = []
-keystokeCount = 0
+keystrokeCount = 0
 wordCount = 1
 tempCount = 0
 clearCount = 0
@@ -28,8 +30,10 @@ ignoredKeystrokes = [
                         keyboard.Key.right, keyboard.Key.down, keyboard.Key.up
                     ]
 
+startTime = time.time()
+
 def on_press(key):
-    global keystokeCount, wordCount, tempCount, clearCount
+    global keystrokeCount, wordCount, tempCount, clearCount, startTime
     
     if key in ignoredKeystrokes:
         pass
@@ -39,14 +43,14 @@ def on_press(key):
             pass
         else:
             keystrokes.pop()
-            keystokeCount -= 1
+            keystrokeCount -= 1
             tempCount -= 1
             if tempCount == 0:
                 wordCount -= 1
                 tempCount = 4
     
     else:
-        keystokeCount += 1
+        keystrokeCount += 1
         clearCount += 1
         keystrokes.append(key)
         
@@ -59,13 +63,20 @@ def on_press(key):
     if clearCount == 100:
         keystrokes.clear()
         clearCount = 0
-    # print(keystrokes)
-    # print(keystokeCount)
+
+    executionTime = (time.time() - startTime)
+    
+    t = threading.Timer(3.0, wpm, [wordCount, round(executionTime)])
+    t.start()
+
+def wpm(words, currentTime):
+    wpm = words * (60 / currentTime)
+    print("WPM: ", round(wpm))
 
 def on_release(key):
     if key == keyboard.Key.insert:
         print("Word count:      ", wordCount)
-        print("Keystroke count: ", keystokeCount)
+        print("Keystroke count: ", keystrokeCount)     
         return False
 
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
