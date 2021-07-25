@@ -5,18 +5,33 @@ from pynput import keyboard
 from PyQt5.QtGui import * 
 from PyQt5.QtWidgets import * 
 
-# system tray icon
-# app = QApplication(sys.argv)
 
-# trayIcon = QSystemTrayIcon(QIcon('icon.png'), parent=app)
-# trayIcon.setToolTip('Typing Speed Tracker')
-# trayIcon.show()
-
-keystrokes = []
 keystrokeCount = 0
 wordCount = 1
 tempCount = 0
-clearCount = 0
+"""
+Removed: 
+clearCount,Keystrokes in main
+parameter words in func wpm
+snippet to clear keystrokes
+"""
+
+"""
+Added:
+lpm var in func wpm
+wordStartTime in main
+TimePeriod in func on_release
+changed avg letter count to become a word as 5 instead of 4(The if condition)
+
+"""
+
+"""
+ignoredKeystrokes:
+
+ERROR
+
+ keyboard.Key.prinont_screen, keyboard.Key.media_play_pause,
+"""
 
 ignoredKeystrokes = [
                         keyboard.Key.f12, keyboard.Key.f11, keyboard.Key.f10, keyboard.Key.f9, keyboard.Key.f8, 
@@ -26,22 +41,21 @@ ignoredKeystrokes = [
                         keyboard.Key.delete, keyboard.Key.end, keyboard.Key.home, keyboard.Key.esc, keyboard.Key.caps_lock,
                         keyboard.Key.shift_r, keyboard.Key.shift_l, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r, keyboard.Key.alt_l,
                         keyboard.Key.alt_gr, keyboard.Key.cmd, keyboard.Key.page_down, keyboard.Key.page_up, keyboard.Key.left, 
-                        keyboard.Key.right, keyboard.Key.down, keyboard.Key.up,keyboard.Key.f2, keyboard.Key.f1,keyboard.Key.media_play_pause
+                        keyboard.Key.right, keyboard.Key.down, keyboard.Key.up,keyboard.Key.f2, keyboard.Key.f1,
                     ]
 
-startTime = time.time()
+startTime = wordStartTime = time.time()
 
 def on_press(key):
-    global keystrokeCount, wordCount, tempCount, clearCount, startTime
-    
+    global keystrokeCount, wordCount, tempCount,  wordStartTime
+    executionTime=0
     if key in ignoredKeystrokes:
         pass
     
     elif key == keyboard.Key.backspace:
-        if len(keystrokes) == 0:
+        if keystrokeCount == 0:
             pass
         else:
-            keystrokes.pop()
             keystrokeCount -= 1
             tempCount -= 1
             if tempCount == 0:
@@ -50,35 +64,34 @@ def on_press(key):
     
     else:
         keystrokeCount += 1
-        clearCount += 1
-        keystrokes.append(key)
         
-        if tempCount == 4:
+        if tempCount == 5:
             wordCount += 1
-            tempCount = 1
+            tempCount = 0
+            executionTime = (time.time() - wordStartTime)
+            wordStartTime=time.time()
         else:
             tempCount += 1
         
-    if clearCount == 100:
-        keystrokes.clear()
-        clearCount = 0
 
-    executionTime = (time.time() - startTime)
-    
-    t = threading.Timer(3.0, wpm, [wordCount, round(executionTime)])
-    t.start()
+    if executionTime!=0:
+        t = threading.Timer(executionTime, wpm, [executionTime])
+        t.start()
 
-def wpm(words, currentTime):
-    wpm = words * (60 / currentTime)
+def wpm(TimePeriod):
+    wpm = 60 / TimePeriod
+    lpm = 60*4*(1/TimePeriod)
     print("WPM: ", round(wpm))
+    print("LPM: ",round(lpm))
 
 def on_release(key):
+    TimePeriod = time.time()-startTime
     if key == keyboard.Key.insert:
         print("Word count:      ", wordCount)
-        print("Keystroke count: ", keystrokeCount)     
+        print("Keystroke count: ", keystrokeCount)
+        print("Avg words per min: ",round(wordCount*(60/TimePeriod)))
+        print("Avg letters per min:", round(keystrokeCount*(60/TimePeriod)))
         return False
 
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
     listener.join()
-
-# sys.exit(app.exec_())
