@@ -18,7 +18,7 @@ snippet to clear keystrokes
 
 """
 Added:
-lpm var in func wpm
+AND COMMENTED lpm var in func wpm (It seems a little odd to display)
 wordStartTime in main
 TimePeriod in func on_release
 changed avg letter count to become a word as 5 instead of 4(The if condition)
@@ -44,10 +44,14 @@ ignoredKeystrokes = [
                         keyboard.Key.right, keyboard.Key.down, keyboard.Key.up,keyboard.Key.f2, keyboard.Key.f1,
                     ]
 
-startTime = wordStartTime = time.time()
+startTime = wordStartTime = endTime = -1.0
 
 def on_press(key):
-    global keystrokeCount, wordCount, tempCount,  wordStartTime
+    global keystrokeCount, wordCount, tempCount,  wordStartTime,startTime,endTime
+
+    if startTime==-1:
+        startTime = wordStartTime = time.time()
+    
     executionTime=0
     if key in ignoredKeystrokes:
         pass
@@ -65,9 +69,11 @@ def on_press(key):
     else:
         keystrokeCount += 1
         
-        if tempCount == 5:
+        endTime=time.time()
+
+        if tempCount == 4:
             wordCount += 1
-            tempCount = 0
+            tempCount = 1
             executionTime = (time.time() - wordStartTime)
             wordStartTime=time.time()
         else:
@@ -80,12 +86,11 @@ def on_press(key):
 
 def wpm(TimePeriod):
     wpm = 60 / TimePeriod
-    lpm = 60*4*(1/TimePeriod)
+    #lpm = 60*4*(1/TimePeriod)
     print("WPM: ", round(wpm))
-    print("LPM: ",round(lpm))
 
 def on_release(key):
-    TimePeriod = time.time()-startTime
+    TimePeriod = endTime-startTime
     if key == keyboard.Key.insert:
         print("Word count:      ", wordCount)
         print("Keystroke count: ", keystrokeCount)
