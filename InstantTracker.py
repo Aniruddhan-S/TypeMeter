@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import *
 keystrokeCount = 0
 wordCount = 1
 tempCount = 0
+avgWpm = 0
 """
 Removed: 
 clearCount,Keystrokes in main
@@ -85,9 +86,15 @@ def on_press(key):
         t.start()
 
 def wpm(TimePeriod):
+    global wordCount,avgWpm
     wpm = 60 / TimePeriod
+    if avgWpm==0:
+        avgWpm=wpm 
+    else:
+        avgWpm = (avgWpm+wpm)/2
     #lpm = 60*4*(1/TimePeriod)
     print("WPM: ", round(wpm))
+    print("Avg WPM: ",round(avgWpm))
 
 def on_release(key):
     TimePeriod = endTime-startTime
