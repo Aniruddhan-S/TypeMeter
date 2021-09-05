@@ -1,7 +1,10 @@
 # IMPORTS
+import os
+import datetime
 import time
 import threading
 from pynput import keyboard
+from stat import S_IREAD, S_IWRITE
 
 
 # ASCII ART
@@ -12,6 +15,7 @@ print("  | || |_| | |_) |  __/ |  | |  __/ ||  __/ |")
 print("  |_| \__, | .__/ \___|_|  |_|\___|\__\___|_|")
 print("      |___/|_|")
 print("\n Press insert to exit the program\n")
+
 
 # GLOBAL VARIABLES
 keystrokeCount = 0
@@ -39,10 +43,10 @@ startTime = wordStartTime = endTime = -1.0
 def on_press(key):
     global keystrokeCount, wordCount, tempCount,  wordStartTime,startTime,endTime
 
-    if startTime==-1:
+    if startTime ==- 1:
         startTime = wordStartTime = time.time()
     
-    executionTime=0
+    executionTime = 0
     if key in ignoredKeystrokes:
         pass
     
@@ -65,12 +69,12 @@ def on_press(key):
             wordCount += 1
             tempCount = 1
             executionTime = (time.time() - wordStartTime)
-            wordStartTime=time.time()
+            wordStartTime = time.time()
         else:
             tempCount += 1
         
 
-    if executionTime!=0:
+    if executionTime != 0:
         t = threading.Timer(executionTime, wpm, [executionTime])
         t.start()
 
@@ -93,8 +97,27 @@ def on_release(key):
         print("Session duration: ", round(TimePeriod), "seconds")
         print("Avg words per min: ",round(wordCount*(60/TimePeriod)))
         print("Avg letters per min:", round(keystrokeCount*(60/TimePeriod)))
+        sessions(TimePeriod)
         return False
 
+# SAVE SESSION INFO
+def sessions(timeperiod):
+        date = datetime.datetime.now()
+        try: 
+            f = open("sessions.txt", 'a')
+        except PermissionError:
+            os.chmod("sessions.txt", S_IWRITE)
+            f = open("sessions.txt", 'a')
+        
+        f.write("\nDATE: %s/%s/%s" % (date.day, date.month, date.year))
+        f.write("\nTIME: %s" % (time.strftime("%I:%M:%S %p")))
+        f.write("\n\nSession duration: %s seconds" % (round(timeperiod)))
+        f.write("\nAvg WPM: %s" % (round(wordCount*(60/timeperiod))))
+        f.write("\nAvg CPM: %s" % (round(keystrokeCount*(60/timeperiod))))
+        f.write("\n\n--------------------------------------------\n")
+        f.close()
+
+        os.chmod("sessions.txt", S_IREAD)
 
 # EVENT LISTENER
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
