@@ -21,7 +21,10 @@ print("\n Press insert to exit the program\n")
 keystrokeCount = 0
 wordCount = 1
 tempCount = 0
-avgWpm = 0
+liveAvgWpm = 0
+pr = 0
+avgWPM = 0
+avgCPM = 0
 
 
 # KEYSTROKES TO BE IGNORED
@@ -41,7 +44,7 @@ startTime = wordStartTime = endTime = -1.0
 
 # MAIN ALGORITHM
 def on_press(key):
-    global keystrokeCount, wordCount, tempCount,  wordStartTime,startTime,endTime
+    global keystrokeCount, wordCount, tempCount, wordStartTime, startTime, endTime
 
     if startTime ==- 1:
         startTime = wordStartTime = time.time()
@@ -81,43 +84,70 @@ def on_press(key):
 
 # DISPLAY WPM
 def wpm(TimePeriod):
-    global wordCount,avgWpm
-    wpm = 60 / TimePeriod
-    if avgWpm == 0:
-        avgWpm=wpm 
+    global liveAvgWpm
+
+    liveWpm = 60 / TimePeriod
+    if liveAvgWpm == 0:
+        liveAvgWpm = liveWpm 
     else:
-        avgWpm = (avgWpm+wpm)/2
-    print("WPM: ",round(avgWpm))
+        liveAvgWpm = (liveAvgWpm+liveWpm)/2
+    print("WPM: ", round(liveAvgWpm))
     
 
 # END PROGRAM
 def on_release(key):
-    TimePeriod = endTime-startTime
+    global avgWPM, avgCPM
+    TimePeriod = endTime - startTime
+   
     if key == keyboard.Key.insert:
+        avgWPM = round(wordCount*(60/TimePeriod))
+        avgCPM = round(keystrokeCount*(60/TimePeriod))
+ 
         print("Session duration: ", round(TimePeriod), "seconds")
-        print("Avg words per min: ",round(wordCount*(60/TimePeriod)))
-        print("Avg letters per min:", round(keystrokeCount*(60/TimePeriod)))
+        print("Avg WPM: ", avgWPM)
+        print("Avg CPM: ", avgCPM)
         sessions(TimePeriod)
+        PR()
         return False
+
 
 # SAVE SESSION INFO
 def sessions(timeperiod):
-        date = datetime.datetime.now()
-        try: 
-            f = open("sessions.txt", 'a')
-        except PermissionError:
-            os.chmod("sessions.txt", S_IWRITE)
-            f = open("sessions.txt", 'a')
-        
-        f.write("\nDATE: %s/%s/%s" % (date.day, date.month, date.year))
-        f.write("\nTIME: %s" % (time.strftime("%I:%M:%S %p")))
-        f.write("\n\nSession duration: %s seconds" % (round(timeperiod)))
-        f.write("\nAvg WPM: %s" % (round(wordCount*(60/timeperiod))))
-        f.write("\nAvg CPM: %s" % (round(keystrokeCount*(60/timeperiod))))
-        f.write("\n\n--------------------------------------------\n")
-        f.close()
+    date = datetime.datetime.now()
+   
+    try: 
+        f = open("sessions.txt", 'a')
+    except PermissionError:
+        os.chmod("sessions.txt", S_IWRITE)
+        f = open("sessions.txt", 'a')
+    
+    f.write("\nDATE: %s/%s/%s" % (date.day, date.month, date.year))
+    f.write("\nTIME: %s" % (time.strftime("%I:%M:%S %p")))
+    f.write("\n\nSession duration: %s seconds" % (round(timeperiod)))
+    f.write("\nAvg WPM: %s" % avgWPM)
+    f.write("\nAvg CPM: %s" % avgCPM)
+    f.write("\n\n--------------------------------------------\n")
+    f.close()
 
-        os.chmod("sessions.txt", S_IREAD)
+    os.chmod("sessions.txt", S_IREAD)
+
+
+def PR():
+    global pr
+    if pr < avgWPM: 
+        pr = avgWPM
+        print(" _________________________________________ ")
+        print("/ Congralutations! You beat your Personal \ ")
+        print("\ Record!                                 / ")
+        print(" ----------------------------------------- ")
+        print("        \   ^__^ ")
+        print("         \  (oo)\_______ ")
+        print("            (__)\       )\/\ ")
+        print("                ||-----|| ")
+        print("                ||     || ")
+    else:
+        print("\n Your Personal Record:", pr)
+
 
 # EVENT LISTENER
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
