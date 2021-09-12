@@ -5,6 +5,7 @@ import time
 import threading
 from pynput import keyboard
 from stat import S_IREAD, S_IWRITE
+import json
 
 
 # ASCII ART
@@ -22,10 +23,20 @@ keystrokeCount = 0
 wordCount = 1
 tempCount = 0
 liveAvgWpm = 0
-pr = 0
 avgWPM = 0
 avgCPM = 0
 
+try:
+    with open("Previous Best.json", "r") as jsonFile:
+        prevBestDictionary = json.load(jsonFile)
+        
+except:
+    prevBestDictionary = { "previousBest" : 0}
+    json_object = json.dumps(prevBestDictionary, indent = 4)
+    with open("Previous Best.json", "w") as outfile:
+            outfile.write(json_object)
+    
+previousBest = prevBestDictionary["previousBest"]
 
 # KEYSTROKES TO BE IGNORED
 ignoredKeystrokes = [
@@ -70,7 +81,7 @@ def on_press(key):
 
         if tempCount == 4:
             wordCount += 1
-            tempCount = 1
+            tempCount = 0
             executionTime = (time.time() - wordStartTime)
             wordStartTime = time.time()
         else:
@@ -133,9 +144,9 @@ def sessions(timeperiod):
 
 
 def PR():
-    global pr
-    if pr < avgWPM: 
-        pr = avgWPM
+    global previousBest
+    if previousBest < avgWPM: 
+        previousBest = avgWPM
         print(" _________________________________________ ")
         print("/ Congralutations! You beat your Personal \ ")
         print("\ Record!                                 / ")
@@ -145,9 +156,14 @@ def PR():
         print("            (__)\       )\/\ ")
         print("                ||-----|| ")
         print("                ||     || ")
+        print(f"Your current best = {avgWPM} wpm")
+        prevBestDictionary["previousBest"] = avgWPM
+        json_object = json.dumps(prevBestDictionary, indent = 4)
+        with open("Previous Best.json", "w") as outfile:
+            outfile.write(json_object)
     else:
-        print("\n Your Personal Record:", pr)
-
+        print(f"\nYour Personal Best : {previousBest}")
+        print("Try hard. You can beat your previous best! :)")
 
 # EVENT LISTENER
 with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
