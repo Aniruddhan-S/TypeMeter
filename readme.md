@@ -4,7 +4,7 @@ This is a simple typing speed tracking application which calculates the wpm in l
 #### NOTE:
 This program requires the pynput module to execute.
 
-To install pynput, you can install it with pip.
+To install pynput, you can use pip.
 ```
 pip install pynput
 ```
