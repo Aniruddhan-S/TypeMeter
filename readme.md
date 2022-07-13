@@ -18,7 +18,7 @@ You run the program in the terminal of your choice with the following command.
 python InstantTracker.py
 ```
 And the program would run in the terminal displaying such output.
-![Program Output](https://github.com/Igneel001/TypeMeter/blob/main/screenshots/program_ss.jpg)
+![Program Output](https://github.com/Igneel001/TypeMeter/blob/main/screenshots/program_ss.PNG)
 
 After running the program, you can minimize the terminal and start typing normally anywhere on your computer. It'll keep reading and calculating the typing speed every second. 
 
